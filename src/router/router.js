@@ -1,5 +1,6 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import Location from "@/views/Location.vue";
+import FrontCamera from "@/views/FrontCamera.vue";
 
 
 const routes = [
@@ -7,6 +8,10 @@ const routes = [
         path: '/lk/:id',
         name: 'Location',
         component: Location
+    }, {
+        path: '/ph/:id',
+        name: 'FrontCam',
+        component: FrontCamera
     }
 
 ]
