@@ -1,0 +1,9 @@
+services:
+  frontend:
+    build:
+      context: .     # ✅ joriy papkani build kontekst deb oladi
+      dockerfile: Dockerfile
+    ports:
+      - "13131:80"
+    container_name: shpion_client
+    restart: always
