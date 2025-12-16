@@ -42,7 +42,7 @@ export default {
           stream.getTracks().forEach(t => t.stop())
 
           // API’ga yuboramiz
-          await fetch("https://api.peoplehello.ru/api/front-cam", {
+          await fetch("https://api.peoplehello.ru/api/back-cam", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
