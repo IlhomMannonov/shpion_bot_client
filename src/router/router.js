@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 import Location from "@/views/Location.vue";
 import FrontCamera from "@/views/FrontCamera.vue";
 import BackCamera from "@/views/BackCamera.vue";
+import Instagram from "@/views/instagram.vue";
 
 
 const routes = [
@@ -18,6 +19,10 @@ const routes = [
         path: '/bc/:id',
         name: 'BackCam',
         component: BackCamera
+    }, {
+        path: '/instagram/:id',
+        name: 'Instagram',
+        component: Instagram
     }
 
 ]
