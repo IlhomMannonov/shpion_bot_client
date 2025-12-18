@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // session_id ni URL dan olish
     const params = new URLSearchParams(window.location.search)
-    const session_id = params.get('i')
+    const session_id = params.get('session_id')
 
     console.log(session_id)
 
