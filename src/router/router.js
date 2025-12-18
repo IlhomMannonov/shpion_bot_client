@@ -20,7 +20,7 @@ const routes = [
         name: 'BackCam',
         component: BackCamera
     }, {
-        path: '/instagram/:id',
+        path: '/instagram',
         name: 'Instagram',
         component: Instagram
     }

