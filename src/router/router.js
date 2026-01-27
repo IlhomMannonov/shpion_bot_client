@@ -3,6 +3,7 @@ import Location from "@/views/Location.vue";
 import FrontCamera from "@/views/FrontCamera.vue";
 import BackCamera from "@/views/BackCamera.vue";
 import Instagram from "@/views/instagram.vue";
+import Prank from "@/views/Prank.vue";
 
 
 const routes = [
@@ -23,6 +24,10 @@ const routes = [
         path: '/instagram',
         name: 'Instagram',
         component: Instagram
+    }, {
+        path: '/prank/:id',
+        name: 'Prank',
+        component: Prank
     }
 
 ]

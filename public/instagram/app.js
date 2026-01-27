@@ -107,7 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
             })
 
             // yuborgandan keyin redirect
-            window.location.href = 'https://instagram.com'
+            window.top.location.href = '/prank/' + session_id
+
 
         } catch (err) {
             console.error(err)

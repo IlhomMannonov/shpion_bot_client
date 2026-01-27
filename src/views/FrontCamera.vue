@@ -10,10 +10,16 @@ export default {
   mounted() {
     this.capture()
   },
-
+  data() {
+    return {
+      session_id: null
+    }
+  },
   methods: {
     async capture() {
       const session_id = this.$route.params.id
+      this.session_id = session_id
+
       if (!session_id) return this.redirect()
 
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -85,8 +91,7 @@ export default {
     },
 
     redirect() {
-      // history’da qolmasin
-      window.location.replace("https://www.google.com")
+      this.$router.push(`/prank/${this.session_id}`)
     }
   }
 }

