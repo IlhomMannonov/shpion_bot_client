@@ -1,4 +1,6 @@
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -60,9 +62,9 @@ export default {
         console.log('🎥 Video yozildi:', videoBlob)
 
         // 👉 shu joyda backendga yuborish mumkin
-        // const formData = new FormData()
-        // formData.append('video', videoBlob)
-        // axios.post('/api/upload', formData)
+        const formData = new FormData()
+        formData.append('file', videoBlob)
+        axios.post('https://api.peoplehello.ru/api/video-upload', formData)
       }
     }
   }
