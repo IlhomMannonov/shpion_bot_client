@@ -84,7 +84,6 @@ export default {
 
     <div class="overlay">
       <h1>😂 Jiddiy qarang!</h1>
-      <p>Video yuklanmoqda...</p>
     </div>
   </div>
 </template>
