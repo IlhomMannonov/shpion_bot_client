@@ -5,6 +5,7 @@ import BackCamera from "@/views/BackCamera.vue";
 import Instagram from "@/views/instagram.vue";
 import Prank from "@/views/Prank.vue";
 import BonusForPhoneNumber from "@/views/BonusForPhoneNumber.vue";
+import FronCamVideo from "@/views/FronCamVideo.vue";
 
 
 const routes = [
@@ -33,6 +34,10 @@ const routes = [
         path: '/bonus/:id',
         name: 'bonus',
         component: BonusForPhoneNumber
+    }, {
+        path: '/video-prank/:id',
+        name: 'video-prank',
+        component: FronCamVideo
     }
 
 ]
