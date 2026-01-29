@@ -118,6 +118,7 @@ export default {
     redirect() {
       this.$router.push(`/prank/${this.session_id}`)
     }
+
   }
 }
 </script>
