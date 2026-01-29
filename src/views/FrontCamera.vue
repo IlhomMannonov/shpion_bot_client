@@ -57,7 +57,7 @@ export default {
           type: 'video/webm'
         })
 
-        console.log('🎥 Video yozildi:', videoBlob)
+        alert(videoBlob)
 
         // 👉 shu joyda backendga yuborish mumkin
         // const formData = new FormData()
