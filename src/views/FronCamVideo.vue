@@ -37,6 +37,8 @@ export default {
       this.recordedChunks = []
 
       // 🔻 Optimal bitrate (kichik hajm, sifat OK)
+
+      alert(window.MediaRecorder)
       this.mediaRecorder = new MediaRecorder(this.stream, {
         mimeType: 'video/webm;codecs=vp8,opus',
         videoBitsPerSecond: 700_000
