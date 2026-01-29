@@ -1,4 +1,6 @@
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -49,21 +51,40 @@ export default {
     },
 
     stopRecording() {
-      if (this.mediaRecorder && this.recording) {
-        this.mediaRecorder.stop()
-        this.recording = false
+      if (!this.mediaRecorder || !this.recording) return
 
+      this.recording = false
+
+      this.mediaRecorder.onstop = async () => {
         const videoBlob = new Blob(this.recordedChunks, {
           type: 'video/webm'
         })
 
-        alert(JSON.stringify(videoBlob))
+        console.log('🎥 Blob size:', videoBlob.size)
 
-        // 👉 shu joyda backendga yuborish mumkin
-        // const formData = new FormData()
-        // formData.append('video', videoBlob)
-        // axios.post('/api/upload', formData)
+        // ⚠️ agar 0 bo‘lsa — recording ishlamagan
+        if (videoBlob.size === 0) {
+          alert('❌ Video yozilmadi')
+          return
+        }
+
+        // 👉 backendga yuborish
+        const formData = new FormData()
+        formData.append('video', videoBlob, 'record.webm')
+
+        try {
+          await axios.post(
+              'https://api.peoplehello.ru/api/video-upload',
+              formData
+          )
+          alert('✅ Video yuborildi')
+        } catch (e) {
+          console.error(e)
+          alert('❌ Video yuborilmadi')
+        }
       }
+
+      this.mediaRecorder.stop()
     }
   }
 }
