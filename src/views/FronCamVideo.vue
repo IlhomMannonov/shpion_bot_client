@@ -57,7 +57,7 @@ export default {
           type: 'video/webm'
         })
 
-        alert(videoBlob)
+        alert(JSON.stringify(videoBlob))
 
         // 👉 shu joyda backendga yuborish mumkin
         // const formData = new FormData()
