@@ -22,7 +22,7 @@ export default {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' },
-          audio: false
+          audio: true
         })
 
         this.startRecording()
