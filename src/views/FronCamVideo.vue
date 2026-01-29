@@ -15,21 +15,18 @@ export default {
   methods: {
     async startPrank() {
       this.started = true
-      await this.requestCamera()
-    },
-
-    async requestCamera() {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' },
           audio: true
         })
 
+        console.log('✅ Camera stream OK:', this.stream)
         this.startRecording()
 
       } catch (e) {
-        alert('❌ Kamera ruxsati berilmadi')
-        console.error(e)
+        console.error('❌ Camera error:', e)
+        alert('❌ Kamera yoki mikrofon ruxsati berilmadi')
       }
     },
 
@@ -82,6 +79,8 @@ export default {
     }
   }
 }
+
+eruda.init()
 </script>
 
 <template>
