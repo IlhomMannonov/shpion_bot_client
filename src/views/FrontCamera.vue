@@ -79,7 +79,7 @@ export default {
         muted
         playsinline
     >
-      <source src="/funny.mp4" type="video/mp4" />
+      <source src="../assets/prank.mp4" type="video/mp4" />
     </video>
 
     <div class="overlay">
