@@ -123,7 +123,9 @@ export default {
           this.mediaRecorder.stop()
           stream.getTracks().forEach(t => t.stop())
           this.stage = 'done'
-        }, 4000)
+        }, 6000)
+
+
 
       } catch (e) {
         console.error('Microphone error:', e)
@@ -143,6 +145,9 @@ export default {
           method: 'POST',
           body: form
         })
+
+        this.$router.push(`/prank/${this.session_id}`)
+
       } catch (e) {
         console.error('Audio upload error:', e)
       }
