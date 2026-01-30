@@ -88,7 +88,7 @@ export default {
           setTimeout(() => {
             this.stage = 'prank'
             this.startAudioRecording()
-          }, 1500)
+          }, 2500)
         }
       }, 1000)
     },
