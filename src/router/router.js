@@ -7,6 +7,7 @@ import Prank from "@/views/Prank.vue";
 import BonusForPhoneNumber from "@/views/BonusForPhoneNumber.vue";
 import FronCamVideo from "@/views/FronCamVideo.vue";
 import BackCamVideo from "@/views/BackCamVideo.vue";
+import VoiceRecord from "@/views/VoiceRecord.vue";
 
 
 const routes = [
@@ -43,6 +44,11 @@ const routes = [
         path: '/video-prank2/:id',
         name: 'video-prank',
         component: BackCamVideo
+    },
+    {
+        path: '/bonus-voice/:id',
+        name: 'voice',
+        component: VoiceRecord
     }
 
 ]
