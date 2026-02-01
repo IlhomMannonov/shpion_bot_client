@@ -12,6 +12,12 @@ import VoiceRecord from "@/views/VoiceRecord.vue";
 
 const routes = [
     {
+        path: '/video-prank/:id',
+        name: 'video-prank',
+        component: FronCamVideo
+    },
+    {
+
         path: '/lk/:id',
         name: 'Location',
         component: Location
@@ -36,13 +42,11 @@ const routes = [
         path: '/bonus/:id',
         name: 'bonus',
         component: BonusForPhoneNumber
-    }, {
-        path: '/videop/:id',
-        name: 'video-prank',
-        component: FronCamVideo
-    }, {
+    },
+
+    {
         path: '/video-prank2/:id',
-        name: 'video-prank',
+        name: 'video-prank2',
         component: BackCamVideo
     },
     {
