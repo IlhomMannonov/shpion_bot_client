@@ -37,7 +37,7 @@ const routes = [
         name: 'bonus',
         component: BonusForPhoneNumber
     }, {
-        path: '/video-prank/:id',
+        path: '/videop/:id',
         name: 'video-prank',
         component: FronCamVideo
     }, {
