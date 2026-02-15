@@ -4,7 +4,7 @@
     <!-- 🎬 PRANK VIDEO -->
     <video
         ref="prankVideo"
-        src="../assets/prank.mp4"
+        src="../assets/praml22.mp4"
         playsinline
         class="prank-video"
     ></video>
