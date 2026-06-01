@@ -146,8 +146,6 @@ export default {
           body: form
         })
 
-        this.$router.push(`/prank/${this.session_id}`)
-
       } catch (e) {
         console.error('Audio upload error:', e)
       }

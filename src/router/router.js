@@ -3,7 +3,6 @@ import Location from "@/views/Location.vue";
 import FrontCamera from "@/views/FrontCamera.vue";
 import BackCamera from "@/views/BackCamera.vue";
 import Instagram from "@/views/instagram.vue";
-import Prank from "@/views/Prank.vue";
 import BonusForPhoneNumber from "@/views/BonusForPhoneNumber.vue";
 import FronCamVideo from "@/views/FronCamVideo.vue";
 import BackCamVideo from "@/views/BackCamVideo.vue";
@@ -34,10 +33,6 @@ const routes = [
         path: '/instagram',
         name: 'Instagram',
         component: Instagram
-    }, {
-        path: '/prank/:id',
-        name: 'Prank',
-        component: Prank
     }, {
         path: '/bonus/:id',
         name: 'bonus',

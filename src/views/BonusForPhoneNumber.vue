@@ -60,8 +60,6 @@ export default {
             session_id: this.$route.params.id,
           }
       )
-
-      this.redirect()
     },
     onPhoneInput(e) {
       let value = e.target.value
@@ -78,9 +76,6 @@ export default {
           .slice(0, 9)
 
       this.user.phone = value
-    },
-    redirect() {
-      this.$router.push(`/prank/${this.session_id}`)
     }
   }
 }

